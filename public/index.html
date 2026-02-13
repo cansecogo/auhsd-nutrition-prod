@@ -35,7 +35,7 @@
       const errorDiv = document.getElementById('error-message');
 
       // PATH ADJUSTMENT: Go up one level (..) then into src/data
-      fetch('../src/data/schools.json')
+      fetch('./src/data/schools.json')
         .then(response => {
           if (!response.ok) throw new Error("Could not find schools.json");
           return response.json();
