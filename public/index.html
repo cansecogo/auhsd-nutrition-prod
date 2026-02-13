@@ -3,64 +3,73 @@
   <head>
     <title>AUHSD Nutrition Portal</title>
     <style>
-      body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; background: #f4f4f4; }
-      .login-card { background: white; padding: 2rem; border-radius: 8px; shadow: 0 4px 6px rgba(0,0,0,0.1); width: 350px; }
-      select, input, button { width: 100%; margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-      button { background: #004a99; color: white; border: none; cursor: pointer; font-weight: bold; }
+      body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; padding-top: 50px; background: #f4f4f4; }
+      .login-card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 350px; }
+      h2 { color: #004a99; margin-top: 0; }
+      select, input, button { width: 100%; margin: 10px 0; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+      button { background: #004a99; color: white; border: none; cursor: pointer; font-weight: bold; transition: background 0.3s; }
+      button:hover { background: #003366; }
+      #error-message { color: #d9534f; font-size: 13px; text-align: center; margin-top: 5px; }
     </style>
   </head>
   <body>
     <div class="login-card">
       <h2>AUHSD Login</h2>
-      <p>Select your school to begin:</p>
+      <p style="font-size: 14px; color: #666;">Production Records Portal</p>
+      
+      <label style="font-size: 12px; font-weight: bold;">SITE LOCATION</label>
       <select id="school-list">
-        <option>Loading schools...</option>
+        <option>Loading sites...</option>
       </select>
-      <input type="password" id="password" placeholder="Enter Password">
-      <button onclick="handleLogin()">Sign In</button>
+
+      <label style="font-size: 12px; font-weight: bold;">PASSWORD</label>
+      <input type="password" id="password" placeholder="••••••••">
+      
+      <button onclick="handleLogin()">SIGN IN</button>
+      <div id="error-message"></div>
     </div>
 
     <script>
-      // We will populate this from your Schools Spreadsheet later!
-      const schools = ["Anaheim High", "Ball Junior High", "Brookhurst Junior High"];
       const select = document.getElementById('school-list');
-      select.innerHTML = schools.map(s => `<option>${s}</option>`).join('');
+      const passwordInput = document.getElementById('password');
+      const errorDiv = document.getElementById('error-message');
+
+      // PATH ADJUSTMENT: Go up one level (..) then into src/data
+      fetch('../src/data/schools.json')
+        .then(response => {
+          if (!response.ok) throw new Error("Could not find schools.json");
+          return response.json();
+        })
+        .then(data => {
+          // Sort Alphabetically
+          data.sort((a, b) => a.name.localeCompare(b.name));
+
+          select.innerHTML = '<option value="" disabled selected>-- Select Your School --</option>';
+          data.forEach(school => {
+            const option = document.createElement('option');
+            option.value = school.category; 
+            option.textContent = school.name;
+            select.appendChild(option);
+          });
+        })
+        .catch(err => {
+          console.error(err);
+          select.innerHTML = '<option>Error: Check folder structure</option>';
+          errorDiv.textContent = "Data load error. Check console (F12).";
+        });
 
       function handleLogin() {
-        alert("Connecting to Firebase...");
+        const selectedSchool = select.options[select.selectedIndex].text;
+        const type = select.value;
+        const pass = passwordInput.value;
+
+        if (pass === "auhsd2026") {
+          alert(`Logged in! \nSchool: ${selectedSchool} \nForm Type: ${type}`);
+          // Next step: redirect to the production record entry page
+        } else {
+          errorDiv.textContent = "Invalid Password.";
+        }
       }
     </script>
-    <script>
-  // This will eventually pull from your Firestore Database!
-  // For now, these are your test schools to verify the dropdown works.
-  const schools = [
-    { name: "Anaheim High", type: "High School" },
-    { name: "Ball Junior High", type: "Junior High" },
-    { name: "Brookhurst Junior High", type: "Junior High" },
-    { name: "Cambridge High", type: "High School" }
-  ];
-
-  const select = document.getElementById('school-list');
-  
-  // Sort schools alphabetically for the user
-  schools.sort((a, b) => a.name.localeCompare(b.name));
-
-  // Populate the dropdown
-  select.innerHTML = '<option value="" disabled selected>Select School...</option>' + 
-    schools.map(s => `<option value="${s.type}">${s.name}</option>`).join('');
-
-  function handleLogin() {
-    const selectedSchool = select.options[select.selectedIndex].text;
-    const schoolType = select.value;
-    const pass = document.getElementById('password').value;
-
-    if (pass === "auhsd2026") { // Temporary password for Phase 1
-      alert(`Success! Logging into ${selectedSchool} (${schoolType} Form)`);
-      // Phase 2 will redirect to the specific Elementary or High School form here
-    } else {
-      alert("Incorrect Password. Please try again.");
-    }
-  }
-</script>
   </body>
 </html>
