@@ -58,18 +58,26 @@
           errorDiv.textContent = "Data load error. Check console (F12).";
         });
 
-      function handleLogin() {
-        const selectedSchool = select.options[select.selectedIndex].text;
-        const type = select.value;
-        const pass = passwordInput.value;
-
-        if (pass === "auhsd2026") {
-          alert(`Logged in! \nSchool: ${selectedSchool} \nForm Type: ${type}`);
-          // Next step: redirect to the production record entry page
-        } else {
-          errorDiv.textContent = "Invalid Password.";
-        }
-      }
+function handleLogin() {
+    const select = document.getElementById('school-list');
+    const selectedSchool = select.options[select.selectedIndex].text;
+    const pass = document.getElementById('password').value;
+    
+// Inside index.html -> handleLogin()
+if (pass === "auhsd2026") {
+    const selectedOption = select.options[select.selectedIndex];
+    
+    // Save the Name AND the Category (Elementary/High School)
+    localStorage.setItem("currentSchool", selectedOption.text);
+    localStorage.setItem("schoolType", selectedOption.getAttribute('data-category')); // Make sure your <option> has this!
+    
+    window.location.href = "record.html";
+}
+    
+    } else {
+        alert("Incorrect Password.");
+    }
+}
     </script>
   </body>
 </html>

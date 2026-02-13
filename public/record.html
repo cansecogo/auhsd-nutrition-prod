@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUHSD Production Record</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: #f4f7f6; }
+        .paper { background: white; padding: 30px; max-width: 1200px; margin: auto; box-shadow: 0 0 15px rgba(0,0,0,0.1); border-top: 10px solid #004a99; }
+        
+        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        h1 { color: #004a99; margin: 0; font-size: 24px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { border: 1px solid #444; padding: 8px; text-align: center; }
+        th { background: #004a99; color: white; font-weight: 600; }
+        
+        input, select { width: 95%; padding: 5px; border: 1px solid #ccc; border-radius: 4px; }
+        input[type="number"] { width: 60px; }
+        .item-input { width: 250px; background: #fffde7; font-weight: bold; }
+
+        .btn-row { margin-top: 30px; display: flex; gap: 15px; }
+        .btn { padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.3s; }
+        .add { background: #007bff; color: white; }
+        .print { background: #28a745; color: white; }
+        .logout { background: #6c757d; color: white; }
+        .btn:hover { opacity: 0.8; transform: translateY(-2px); }
+
+        @media print {
+            .btn-row, button, .item-input::placeholder { display: none !important; }
+            body { background: white; padding: 0; }
+            .paper { box-shadow: none; width: 100%; max-width: 100%; border: none; }
+            input { border: none; background: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="paper">
+    <div class="header-section">
+        <div>
+            <h1 id="title">Daily Production Record</h1>
+            <p><strong>Site:</strong> <span id="disp-school"></span></p>
+        </div>
+        <div style="text-align: right;">
+            <p><strong>Date:</strong> <input type="date" id="prod-date"></p>
+            <p><strong>Type:</strong> <span id="disp-type" style="text-transform: uppercase; color: #d9534f; font-weight: bold;"></span></p>
+        </div>
+    </div>
+
+    <table id="main-table">
+        <thead id="table-head"></thead>
+        <tbody id="table-body"></tbody>
+    </table>
+
+    <div class="btn-row">
+        <button class="btn add" onclick="addRow()">+ Add Menu Item</button>
+        <button class="btn print" onclick="window.print()">Print for Office</button>
+        <button class="btn logout" onclick="logout()">Switch School</button>
+    </div>
+</div>
+
+<script>
+    // 1. Initial Setup
+    const schoolName = localStorage.getItem("currentSchool") || "Select School";
+    const type = localStorage.getItem("schoolType") || "High School";
+    
+    document.getElementById('disp-school').textContent = schoolName;
+    document.getElementById('disp-type').textContent = type;
+    document.getElementById('prod-date').valueAsDate = new Date();
+
+    // 2. Define Table Structure
+    function setupHeaders() {
+        const head = document.getElementById('table-head');
+        if (type === "High School") {
+            head.innerHTML = `<tr>
+                <th>Menu Item (Type to Search)</th><th>Recipe #</th><th>Temp</th>
+                <th>Prev Left</th><th>New Prep</th><th>Total</th>
+                <th>Served</th><th>Discard</th><th>Future Use</th>
+            </tr>`;
+        } else {
+            head.innerHTML = `<tr>
+                <th>Menu Item (Type to Search)</th><th>Recipe #</th>
+                <th>Prepared</th><th>Leftover</th><th>Discard</th><th>Total Served</th>
+            </tr>`;
+        }
+    }
+
+    // 3. Add Searchable Row
+    async function addRow() {
+        let menuData;
+        try {
+            // Path to your JSON file
+            const response = await fetch('src/data/menuItems.json');
+            menuData = await response.json();
+
+            
+        } catch (err) {
+            console.error("JSON Fetch Failed:", err);
+            // Backup Menu if file is missing/broken
+            menuData = {
+                "highSchool": { "breakfast": [{ "item": "Stuffed Cinn French Toast", "recipe": "141180" }] },
+                "elementary": { "lunch": [{ "item": "Turkey Barbacoa", "recipe": "1498467" }] }
+            };
+        }
+
+        const listKey = (type === "High School") ? menuData.highSchool.breakfast : menuData.elementary.lunch;
+        const tbody = document.getElementById('table-body');
+        const tr = document.createElement('tr');
+        const uniqueId = Date.now();
+
+        let optionsHtml = "";
+        listKey.forEach(item => {
+            optionsHtml += `<option value="${item.item}" data-recipe="${item.recipe}">`;
+        });
+
+        if (type === "High School") {
+            tr.innerHTML = `
+                <td>
+                    <input list="dl-${uniqueId}" onchange="fillRecipe(this)" class="item-input" placeholder="Type name...">
+                    <datalist id="dl-${uniqueId}">${optionsHtml}</datalist>
+                </td>
+                <td class="recipe-cell">-</td>
+                <td><input type="text" style="width:60px"></td>
+                <td><input type="number" class="prev" oninput="doHSMath(this)"></td>
+                <td><input type="number" class="new" oninput="doHSMath(this)"></td>
+                <td class="total-p" style="font-weight:bold">0</td>
+                <td><input type="number" class="serv" oninput="doHSMath(this)"></td>
+                <td><input type="number" class="disc" oninput="doHSMath(this)"></td>
+                <td class="future" style="font-weight:bold; color:blue">0</td>`;
+        } else {
+            tr.innerHTML = `
+                <td>
+                    <input list="dl-${uniqueId}" onchange="fillRecipe(this)" class="item-input" placeholder="Type name...">
+                    <datalist id="dl-${uniqueId}">${optionsHtml}</datalist>
+                </td>
+                <td class="recipe-cell">-</td>
+                <td><input type="number" class="prep" oninput="doElemMath(this)"></td>
+                <td><input type="number" class="left" oninput="doElemMath(this)"></td>
+                <td><input type="number" class="disc" oninput="doElemMath(this)"></td>
+                <td class="served" style="font-weight:bold; color:green">0</td>`;
+        }
+        tbody.appendChild(tr);
+    }
+
+    // 4. Fill Recipe when Item is found
+    function fillRecipe(inputEl) {
+        const row = inputEl.closest('tr');
+        const val = inputEl.value;
+        const datalist = row.querySelector('datalist');
+        const options = datalist.options;
+        
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].value === val) {
+                row.querySelector('.recipe-cell').textContent = options[i].getAttribute('data-recipe') || "-";
+                return;
+            }
+        }
+        row.querySelector('.recipe-cell').textContent = "-";
+    }
+
+    // 5. Mathematics Logic
+    function doHSMath(el) {
+        const row = el.closest('tr');
+        const prev = parseFloat(row.querySelector('.prev').value) || 0;
+        const newP = parseFloat(row.querySelector('.new').value) || 0;
+        const totalP = prev + newP;
+        row.querySelector('.total-p').textContent = totalP;
+        
+        const serv = parseFloat(row.querySelector('.serv').value) || 0;
+        const disc = parseFloat(row.querySelector('.disc').value) || 0;
+        row.querySelector('.future').textContent = totalP - serv - disc;
+    }
+
+    function doElemMath(el) {
+        const row = el.closest('tr');
+        const prep = parseFloat(row.querySelector('.prep').value) || 0;
+        const left = parseFloat(row.querySelector('.left').value) || 0;
+        const disc = parseFloat(row.querySelector('.disc').value) || 0;
+        row.querySelector('.served').textContent = prep - left - disc;
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = "index.html";
+    }
+
+    // Initialize
+    setupHeaders();
+    addRow();
+</script>
+
+</body>
+</html>

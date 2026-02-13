@@ -1,0 +1,19 @@
+{
+  "highSchool": {
+    "breakfast": [
+      { "item": "Stuffed Cinn French Toast Bar", "recipe": "141180", "contribution": "2 Grain" },
+      { "item": "Fruit Yogurt Parfait", "recipe": "269133, 14635", "contribution": "1 Grain, 1 Meat, 1/2c. Fruit" },
+      { "item": "Muffin - Chocolate Chip", "recipe": "406578", "contribution": "2 Grain" }
+    ],
+    "lunch": [
+      { "item": "Chicken Shaker Salad w/ Crackers", "recipe": "DFC6057", "contribution": "2 Grain, 2 Meat, 1.5c. Veg" },
+      { "item": "Barbacoa Torta w/ Slaw", "recipe": "1697903", "contribution": "2 Grain, 2 Meat, 1/4c. Veg" }
+    ]
+  },
+  "elementary": {
+    "lunch": [
+      { "item": "Turkey Barbacoa", "recipe": "1498467", "contribution": "2M/MA" },
+      { "item": "Bean & Cheese Burrito", "recipe": "403406", "contribution": "2 Grain, 2 Meat" }
+    ]
+  }
+}
