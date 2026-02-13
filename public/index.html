@@ -30,5 +30,37 @@
         alert("Connecting to Firebase...");
       }
     </script>
+    <script>
+  // This will eventually pull from your Firestore Database!
+  // For now, these are your test schools to verify the dropdown works.
+  const schools = [
+    { name: "Anaheim High", type: "High School" },
+    { name: "Ball Junior High", type: "Junior High" },
+    { name: "Brookhurst Junior High", type: "Junior High" },
+    { name: "Cambridge High", type: "High School" }
+  ];
+
+  const select = document.getElementById('school-list');
+  
+  // Sort schools alphabetically for the user
+  schools.sort((a, b) => a.name.localeCompare(b.name));
+
+  // Populate the dropdown
+  select.innerHTML = '<option value="" disabled selected>Select School...</option>' + 
+    schools.map(s => `<option value="${s.type}">${s.name}</option>`).join('');
+
+  function handleLogin() {
+    const selectedSchool = select.options[select.selectedIndex].text;
+    const schoolType = select.value;
+    const pass = document.getElementById('password').value;
+
+    if (pass === "auhsd2026") { // Temporary password for Phase 1
+      alert(`Success! Logging into ${selectedSchool} (${schoolType} Form)`);
+      // Phase 2 will redirect to the specific Elementary or High School form here
+    } else {
+      alert("Incorrect Password. Please try again.");
+    }
+  }
+</script>
   </body>
 </html>
