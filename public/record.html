@@ -25,13 +25,147 @@
         .print { background: #28a745; color: white; }
         .logout { background: #6c757d; color: white; }
         .btn:hover { opacity: 0.8; transform: translateY(-2px); }
+    
+
+@media print {
+        /* ... your existing print rules ... */
+
+        /* NEW: Force the Item Name input to use all available space */
+        .item-input {
+            width: 100% !important;
+            max-width: none !important;
+            overflow: visible !important;
+        }
+
+        /* NEW: Make the first column (The Menu Item) take up 40% of the page */
+        th:first-child, td:first-child {
+            width: 40% !important;
+        }
+        
+        /* NEW: Shrink the font slightly so long names fit */
+        input {
+            font-size: 11px !important; 
+        }
+    }
+        @media print {
+            /* 1. Hide things we don't need on paper */
+            .btn-row, .btn, .logout, .add, .print { 
+                display: none !important; 
+            }
+            
+            /* 2. Hide the "Search" placeholder text */
+            .item-input::placeholder {
+                color: transparent;
+            }
+
+            /* 3. Make the background plain white */
+            body, .paper { 
+                background: white; 
+                margin: 0; 
+                padding: 0; 
+                box-shadow: none; 
+                border: none; 
+                width: 100%;
+                max-width: 100%;
+            }
+
+            /* 4. Make inputs look like text, not boxes */
+            input, select, .item-input {
+                border: none;
+                background: transparent;
+                padding: 0;
+                width: auto;
+                font-weight: bold;
+                color: black;
+            }
+            
+            /* 5. Force the table to show borders clearly */
+            table, th, td {
+                border: 1px solid black !important;
+            }
+        }
+
+        /* LOCKED MODE STYLES */
+        input:disabled, select:disabled {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            color: #555;
+            cursor: not-allowed;
+        }
 
         @media print {
-            .btn-row, button, .item-input::placeholder { display: none !important; }
-            body { background: white; padding: 0; }
-            .paper { box-shadow: none; width: 100%; max-width: 100%; border: none; }
-            input { border: none; background: none; }
+        /* 1. HIDE BUTTONS & NAV */
+        .btn-row, .btn, button, .logout { 
+            display: none !important; 
         }
+         /* SIGNATURE SECTION STYLES */
+        .signature-section {
+            margin-top: 50px;
+            display: flex;
+            gap: 30px;
+            page-break-inside: avoid; /* Keeps signature on same page when printing */
+        }
+        .sig-box {
+            flex: 1; /* Both lines take equal width */
+        }
+        .sig-line {
+            border-bottom: 2px solid black;
+            margin-top: 5px;
+            height: 25px; /* Height for the handwriting space */
+        }
+        .sig-label {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        /* 2. REMOVE BORDERS & BACKGROUNDS */
+        /* This makes input boxes look like just text on a page */
+        input, select, textarea {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            resize: none; /* Hides the little drag corner on text areas */
+        }
+
+        /* 3. THE GHOST BUSTER: HIDE PLACEHOLDERS */
+        /* This makes "Type to search..." invisible when printing */
+        input::placeholder {
+            color: transparent !important;
+            opacity: 0 !important;
+        }
+        
+        /* 4. CLEAN UP THE TABLE */
+        body { 
+            background: white; 
+            padding: 0; 
+            margin: 0;
+        }
+        .paper {
+            box-shadow: none;
+            border: none;
+            width: 100%;
+            max-width: 100%;
+        }
+    }
+    /* --- SIGNATURE STYLES --- */
+    .signature-section {
+        margin-top: 50px;
+        display: flex;       /* This makes them sit side-by-side */
+        gap: 30px;
+    }
+    .sig-box {
+        flex: 1;             /* Each box takes equal space */
+    }
+    .sig-label {
+        font-weight: bold;   /* Makes "Manager Signature" bold */
+        font-size: 14px;
+    }
+    .sig-line {
+        border-bottom: 2px solid black; /* This draws the line! */
+        margin-top: 35px;    /* Space for the handwriting */
+        height: 1px;
+    }
     </style>
 </head>
 <body>
@@ -53,12 +187,228 @@
         <tbody id="table-body"></tbody>
     </table>
 
-    <div class="btn-row">
-        <button class="btn add" onclick="addRow()">+ Add Menu Item</button>
-        <button class="btn print" onclick="window.print()">Print for Office</button>
+    <div class="signature-section">
+        <div class="sig-box">
+            <div class="sig-label">Manager Signature:</div>
+            <div class="sig-line"></div>
+        </div>
+        <div class="sig-box">
+            <div class="sig-label">Date:</div>
+            <div class="sig-line"></div>
+        </div>
+    </div>
+
+
+<script>
+    // 1. Initial Setup
+    const schoolName = localStorage.getItem("currentSchool") || "Select School";
+    const type = localStorage.getItem("schoolType") || "High School";
+    
+    document.getElementById('disp-school').textContent = schoolName;
+    document.getElementById('disp-type').textContent = type;
+    
+    // Auto-Save Key (Unique to the school type so data doesn't mix)
+    const SAVE_KEY = `autosave_${type.replace(" ", "")}`;
+
+    // 2. Define Table Structure
+    function setupHeaders() {
+        const head = document.getElementById('table-head');
+        if (type === "High School") {
+            head.innerHTML = `<tr>
+                <th>Menu Item (Type to Search)</th><th>Recipe #</th><th>Temp</th>
+                <th>Prev Left</th><th>New Prep</th><th>Total</th>
+                <th>Served</th><th>Discard</th><th>Future Use</th>
+            </tr>`;
+        } else {
+            head.innerHTML = `<tr>
+                <th>Menu Item (Type to Search)</th><th>Recipe #</th>
+                <th>Prepared</th><th>Leftover</th><th>Discard</th><th>Total Served</th>
+            </tr>`;
+        }
+    }
+
+    // 3. Add Searchable Row (Now supports loading saved data!)
+    async function addRow(savedData = null) {
+        let menuData;
+        try {
+            const response = await fetch('src/data/menuItems.json'); // Ensure path is correct!
+            menuData = await response.json();
+        } catch (err) {
+            console.error("JSON Fetch Failed:", err);
+            // Backup Menu
+            menuData = {
+                "highSchool": { "breakfast": [{ "item": "Stuffed Cinn French Toast", "recipe": "141180" }] },
+                "elementary": { "lunch": [{ "item": "Turkey Barbacoa", "recipe": "1498467" }] }
+            };
+        }
+
+        const listKey = (type === "High School") ? menuData.highSchool.breakfast : menuData.elementary.lunch;
+        const tbody = document.getElementById('table-body');
+        const tr = document.createElement('tr');
+        const uniqueId = Date.now() + Math.random(); // Ensure truly unique ID
+
+        let optionsHtml = "";
+        listKey.forEach(item => {
+            optionsHtml += `<option value="${item.item}" data-recipe="${item.recipe}">`;
+        });
+
+        // Add Event Listener to ALL inputs for Auto-Save
+        const saveEvent = 'oninput="saveToStorage();"';
+        const mathEvent = (type === "High School") ? 'doHSMath(this)' : 'doElemMath(this)';
+
+        if (type === "High School") {
+            tr.innerHTML = `
+                <td>
+                    <input list="dl-${uniqueId}" onchange="fillRecipe(this); saveToStorage();" class="item-input" placeholder="Type name..." ${saveEvent}>
+                    <datalist id="dl-${uniqueId}">${optionsHtml}</datalist>
+                </td>
+                <td class="recipe-cell">-</td>
+                <td><input type="text" style="width:60px" ${saveEvent}></td>
+                <td><input type="number" class="prev" oninput="${mathEvent}; saveToStorage()"></td>
+                <td><input type="number" class="new" oninput="${mathEvent}; saveToStorage()"></td>
+                <td class="total-p" style="font-weight:bold">0</td>
+                <td><input type="number" class="serv" oninput="${mathEvent}; saveToStorage()"></td>
+                <td><input type="number" class="disc" oninput="${mathEvent}; saveToStorage()"></td>
+                <td class="future" style="font-weight:bold; color:blue">0</td>`;
+        } else {
+            tr.innerHTML = `
+                <td>
+                    <input list="dl-${uniqueId}" onchange="fillRecipe(this); saveToStorage();" class="item-input" placeholder="Type name..." ${saveEvent}>
+                    <datalist id="dl-${uniqueId}">${optionsHtml}</datalist>
+                </td>
+                <td class="recipe-cell">-</td>
+                <td><input type="number" class="prep" oninput="${mathEvent}; saveToStorage()"></td>
+                <td><input type="number" class="left" oninput="${mathEvent}; saveToStorage()"></td>
+                <td><input type="number" class="disc" oninput="${mathEvent}; saveToStorage()"></td>
+                <td class="served" style="font-weight:bold; color:green">0</td>`;
+        }
+        tbody.appendChild(tr);
+
+        // If we are loading saved data, fill the inputs now
+        if (savedData) {
+            const inputs = tr.querySelectorAll('input');
+            const recipeCell = tr.querySelector('.recipe-cell');
+            
+            // Fill Inputs
+            if (savedData.vals) {
+                inputs.forEach((inp, index) => {
+                    if (savedData.vals[index]) inp.value = savedData.vals[index];
+                });
+            }
+            // Fill Recipe
+            if (savedData.recipe) recipeCell.textContent = savedData.recipe;
+
+            // Trigger Math Update
+            if (type === "High School") doHSMath(tr.querySelector('.prev'));
+            else doElemMath(tr.querySelector('.prep'));
+        }
+    }
+
+    // 4. Fill Recipe
+    function fillRecipe(inputEl) {
+        const row = inputEl.closest('tr');
+        const val = inputEl.value;
+        const datalist = row.querySelector('datalist');
+        const options = datalist.options;
+        
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].value === val) {
+                row.querySelector('.recipe-cell').textContent = options[i].getAttribute('data-recipe') || "-";
+                return;
+            }
+        }
+        row.querySelector('.recipe-cell').textContent = "-";
+    }
+
+    // 5. Math Functions
+    function doHSMath(el) {
+        const row = el.closest('tr');
+        const prev = parseFloat(row.querySelector('.prev').value) || 0;
+        const newP = parseFloat(row.querySelector('.new').value) || 0;
+        const totalP = prev + newP;
+        row.querySelector('.total-p').textContent = totalP;
+        
+        const serv = parseFloat(row.querySelector('.serv').value) || 0;
+        const disc = parseFloat(row.querySelector('.disc').value) || 0;
+        row.querySelector('.future').textContent = totalP - serv - disc;
+    }
+
+    function doElemMath(el) {
+        const row = el.closest('tr');
+        const prep = parseFloat(row.querySelector('.prep').value) || 0;
+        const left = parseFloat(row.querySelector('.left').value) || 0;
+        const disc = parseFloat(row.querySelector('.disc').value) || 0;
+        row.querySelector('.served').textContent = prep - left - disc;
+    }
+
+    // 6. AUTO-SAVE LOGIC (The New Brain)
+    function saveToStorage() {
+        const rows = [];
+        const tableRows = document.querySelectorAll('#table-body tr');
+        
+        tableRows.forEach(tr => {
+            // Collect all input values in this row
+            const inputVals = Array.from(tr.querySelectorAll('input')).map(i => i.value);
+            const recipe = tr.querySelector('.recipe-cell').textContent;
+            
+            rows.push({
+                vals: inputVals,
+                recipe: recipe
+            });
+        });
+        
+        // Save to browser memory
+        localStorage.setItem(SAVE_KEY, JSON.stringify(rows));
+        
+        // Also save the Date
+        localStorage.setItem(SAVE_KEY + "_date", document.getElementById('prod-date').value);
+    }
+
+    function loadFromStorage() {
+        const savedRows = localStorage.getItem(SAVE_KEY);
+        const savedDate = localStorage.getItem(SAVE_KEY + "_date");
+
+        if (savedDate) {
+            document.getElementById('prod-date').value = savedDate;
+        } else {
+            document.getElementById('prod-date').valueAsDate = new Date();
+        }
+
+        if (savedRows) {
+            const parsedRows = JSON.parse(savedRows);
+            // Re-create each row
+            parsedRows.forEach(rowData => {
+                addRow(rowData);
+            });
+        } else {
+            // If nothing saved, start with 1 empty row
+            addRow();
+        }
+    }
+
+    function logout() {
+        // Clear everything when switching schools
+        localStorage.removeItem(SAVE_KEY);
+        localStorage.removeItem(SAVE_KEY + "_date");
+        localStorage.removeItem("currentSchool");
+        localStorage.removeItem("schoolType");
+        window.location.href = "index.html";
+    }
+
+    // Initialize
+    setupHeaders();
+    loadFromStorage(); // Load data instead of just adding a blank row!
+</script>
+
+  <div class="btn-row">
+        <button id="btn-add" class="btn add" onclick="addRow()">+ Add Menu Item</button>
+        
+        <button id="btn-submit" class="btn" style="background: #e0a800; color: white;" onclick="submitDay()">Complete & Lock</button>
+        
+        <button id="btn-print" class="btn print" onclick="window.print()" style="display: none;">Print for Office</button>
+        
         <button class="btn logout" onclick="logout()">Switch School</button>
     </div>
-</div>
 
 <script>
     // 1. Initial Setup
@@ -184,7 +534,33 @@
         localStorage.clear();
         window.location.href = "index.html";
     }
+// --- NEW: SUBMIT & LOCK LOGIC ---
 
+    function submitDay() {
+        // 1. Confirm with the user
+        if (!confirm("Are you sure you want to finish? You cannot edit the form after this.")) {
+            return;
+        }
+
+        // 2. Lock the form
+        lockForm();
+
+        // 3. Save the "Locked" status to memory
+        localStorage.setItem(SAVE_KEY + "_status", "locked");
+    }
+
+    function lockForm() {
+        // Disable all inputs
+        const allInputs = document.querySelectorAll('input, select');
+        allInputs.forEach(input => {
+            input.disabled = true;
+        });
+
+        // Hide Edit Buttons, Show Print Button
+        document.getElementById('btn-add').style.display = 'none';
+        document.getElementById('btn-submit').style.display = 'none';
+        document.getElementById('btn-print').style.display = 'inline-block';
+    }
     // Initialize
     setupHeaders();
     addRow();
