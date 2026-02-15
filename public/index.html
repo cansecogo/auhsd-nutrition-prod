@@ -5,49 +5,138 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AUHSD Production Record - Login</title>
   <style>
-    body { font-family: Arial, sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; background:#f4f4f9; margin:0; }
-    .login-card { background:#fff; padding:40px; border-radius:10px; box-shadow:0 4px 15px rgba(0,0,0,0.1); width:100%; max-width:400px; text-align:center; }
-    h2 { color:#0056b3; margin-bottom:20px; }
-    label { display:block; text-align:left; margin:10px 0 5px; font-weight:bold; }
-    select, button { width:100%; padding:10px; margin-bottom:15px; border:1px solid #ccc; border-radius:5px; font-size:16px; }
-    button { background:#0056b3; color:#fff; border:none; cursor:pointer; font-weight:bold; }
-    button:hover { background:#004494; }
+    body { 
+      font-family: Arial, sans-serif; 
+      display:flex; 
+      justify-content:center; 
+      align-items:center; 
+      height:100vh; 
+      background:#f4f4f9; 
+      margin:0; 
+    }
+    .login-card { 
+      background:#fff; 
+      padding:40px; 
+      border-radius:10px; 
+      box-shadow:0 4px 15px rgba(0,0,0,0.1); 
+      width:100%; 
+      max-width:450px; 
+      text-align:center; 
+    }
+    .brand-header {
+      color:#666;
+      font-size:12px;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      margin-bottom:8px;
+      font-weight:bold;
+    }
+    h2 { 
+      color:#0056b3; 
+      margin-bottom:25px; 
+      font-size:24px;
+    }
+    label { 
+      display:block; 
+      text-align:left; 
+      margin:15px 0 5px; 
+      font-weight:bold; 
+      font-size:14px;
+    }
+    select, button { 
+      width:100%; 
+      padding:12px; 
+      margin-bottom:15px; 
+      border:1px solid #ccc; 
+      border-radius:5px; 
+      font-size:16px; 
+    }
+    button { 
+      background:#0056b3; 
+      color:#fff; 
+      border:none; 
+      cursor:pointer; 
+      font-weight:bold; 
+      margin-top:10px;
+    }
+    button:hover { 
+      background:#004494; 
+    }
   </style>
 </head>
 <body>
   <div class="login-card">
+    <!-- FIXED: Added AUHSD Food Services above title -->
+    <div class="brand-header">AUHSD Food Services</div>
     <h2>Daily Production Record</h2>
 
-    <label for="schoolSelect">Select Site:</label>
+    <label for="schoolSelect">Select School:</label>
     <select id="schoolSelect">
       <option value="" disabled selected>-- Choose School --</option>
-      <option value="Anaheim High">Anaheim High</option>
-      <option value="Cypress High">Cypress High</option>
-      <option value="Katella High">Katella High</option>
-      <option value="Kennedy High">Kennedy High</option>
-      <option value="Loara High">Loara High</option>
-      <option value="Magnolia High">Magnolia High</option>
-      <option value="Oxford Academy">Oxford Academy</option>
-      <option value="Savanna High">Savanna High</option>
-      <option value="Western High">Western High</option>
-      <option value="Brookhurst JHS">Brookhurst JHS</option>
-      <option value="Dale JHS">Dale JHS</option>
-      <option value="Orangeview JHS">Orangeview JHS</option>
-      <option value="South JHS">South JHS</option>
-      <option value="Sycamore JHS">Sycamore JHS</option>
-      <option value="Walker JHS">Walker JHS</option>
+      <!-- Elementary Schools -->
+      <optgroup label="Elementary Schools">
+        <option value="Barton Elementary" data-type="Elementary">Barton Elementary</option>
+        <option value="Edison Elementary" data-type="Elementary">Edison Elementary</option>
+        <option value="Franklin Elementary" data-type="Elementary">Franklin Elementary</option>
+        <option value="Gauer Elementary" data-type="Elementary">Gauer Elementary</option>
+        <option value="Guinn Elementary" data-type="Elementary">Guinn Elementary</option>
+        <option value="Henry Elementary" data-type="Elementary">Henry Elementary</option>
+        <option value="Jefferson Elementary" data-type="Elementary">Jefferson Elementary</option>
+        <option value="Juarez Elementary" data-type="Elementary">Juarez Elementary</option>
+        <option value="Lincoln Elementary" data-type="Elementary">Lincoln Elementary</option>
+        <option value="Loara Elementary" data-type="Elementary">Loara Elementary</option>
+        <option value="Madison Elementary" data-type="Elementary">Madison Elementary</option>
+        <option value="Mann Elementary" data-type="Elementary">Mann Elementary</option>
+        <option value="Marshall Elementary" data-type="Elementary">Marshall Elementary</option>
+        <option value="Olive Street Elementary" data-type="Elementary">Olive Street Elementary</option>
+        <option value="Orange Grove Elementary" data-type="Elementary">Orange Grove Elementary</option>
+        <option value="Ponderosa Elementary" data-type="Elementary">Ponderosa Elementary</option>
+        <option value="Price Elementary" data-type="Elementary">Price Elementary</option>
+        <option value="Revere Elementary" data-type="Elementary">Revere Elementary</option>
+        <option value="Roosevelt Elementary" data-type="Elementary">Roosevelt Elementary</option>
+        <option value="Ross North Elementary" data-type="Elementary">Ross North Elementary</option>
+        <option value="Ross South Elementary" data-type="Elementary">Ross South Elementary</option>
+        <option value="Stoddard Elementary" data-type="Elementary">Stoddard Elementary</option>
+        <option value="Sunkist Elementary" data-type="Elementary">Sunkist Elementary</option>
+        <option value="Westmont Elementary" data-type="Elementary">Westmont Elementary</option>
+      </optgroup>
+      
+      <!-- FIXED: High Schools and JHS together -->
+      <optgroup label="High Schools & Junior High Schools">
+        <option value="Anaheim High" data-type="High School">Anaheim High</option>
+        <option value="Ball JHS" data-type="High School">Ball JHS</option>
+        <option value="Brookhurst JHS" data-type="High School">Brookhurst JHS</option>
+        <option value="Cypress High" data-type="High School">Cypress High</option>
+        <option value="Dale JHS" data-type="High School">Dale JHS</option>
+        <option value="Katella High" data-type="High School">Katella High</option>
+        <option value="Kennedy High" data-type="High School">Kennedy High</option>
+        <option value="Lexington JHS" data-type="High School">Lexington JHS</option>
+        <option value="Loara High" data-type="High School">Loara High</option>
+        <option value="Magnolia High" data-type="High School">Magnolia High</option>
+        <option value="Orangeview JHS" data-type="High School">Orangeview JHS</option>
+        <option value="Oxford Academy" data-type="High School">Oxford Academy</option>
+        <option value="Savanna High" data-type="High School">Savanna High</option>
+        <option value="South JHS" data-type="High School">South JHS</option>
+        <option value="Sycamore JHS" data-type="High School">Sycamore JHS</option>
+        <option value="Walker JHS" data-type="High School">Walker JHS</option>
+        <option value="Western High" data-type="High School">Western High</option>
+      </optgroup>
     </select>
 
-    <label for="typeSelect">School Type:</label>
-    <select id="typeSelect">
-      <option value="High School">High School</option>
-      <option value="Elementary">Elementary / JHS</option>
-    </select>
+    <!-- FIXED: School Type now auto-filled based on selection -->
+    <input type="hidden" id="typeSelect" value="">
 
     <button id="startBtn" type="button">Start Record</button>
   </div>
 
   <script>
+    // Auto-detect school type when school is selected
+    document.getElementById("schoolSelect").addEventListener("change", (e) => {
+      const selectedOption = e.target.options[e.target.selectedIndex];
+      const schoolType = selectedOption.getAttribute("data-type");
+      document.getElementById("typeSelect").value = schoolType;
+    });
+
     document.getElementById("startBtn").addEventListener("click", () => {
       const school = document.getElementById("schoolSelect").value;
       const type = document.getElementById("typeSelect").value;
